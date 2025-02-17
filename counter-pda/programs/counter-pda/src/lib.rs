@@ -1,9 +1,9 @@
 use anchor_lang::prelude::*;
 
-declare_id!("97rfnZNfv2rgxUp8qE2wXtUp8mEJ2fpz1sXgDS4y611R");
+declare_id!("HFDmW1soYc5Z644hq713rt2Xyff8tnPwcXoxdCT979du");
 
 #[program]
-pub mod counter {
+pub mod counter_pda {
     use super::*;
 
     pub fn create_counter(ctx: Context<CreateCounter>) -> Result<()> {
@@ -29,6 +29,11 @@ pub mod counter {
         Ok(())
     }
 
+    pub fn close_counter(_ctx: Context<CloseCounter>) -> Result<()> {
+        msg!("Close the counter account");
+        Ok(())
+    }
+
 }
 
 #[derive(Accounts)]
@@ -50,6 +55,17 @@ pub struct CreateCounter<'info> {
 pub struct UpdateCounter<'info> {
     authority: Signer<'info>,
     #[account(mut, has_one = authority)]
+    counter: Account<'info, Counter>,
+}
+
+#[derive(Accounts)]
+pub struct CloseCounter<'info> {
+    authority: Signer<'info>,
+    #[account(
+        mut, 
+        close = authority,
+        has_one = authority
+    )]
     counter: Account<'info, Counter>,
 }
 
