@@ -24,6 +24,13 @@ pub mod counter {
         Ok(())
     }
 
+    // set counter value from paramater
+    pub fn set_counter(ctx: Context<SetCounter>, count: u64) -> Result<()> {
+        let counter = &mut ctx.accounts.counter;
+        counter.count = count;
+        Ok(())
+    }
+
 }
 
 const ANCHOR_DISCRIMINATOR: usize = 8;
@@ -48,6 +55,13 @@ pub struct IncrementCounter<'info> {
     #[account(mut, has_one = authority)]
     pub counter: Account<'info, Counter>,
     // signer
+    pub authority: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct SetCounter<'info> {
+    #[account(mut, has_one = authority)]
+    pub counter: Account<'info, Counter>,
     pub authority: Signer<'info>,
 }
 
