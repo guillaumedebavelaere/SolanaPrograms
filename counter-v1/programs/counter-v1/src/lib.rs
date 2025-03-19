@@ -2,7 +2,7 @@
 use anchor_lang::prelude::*;
 
 // Identifiant du program qui est unique
-declare_id!("DAk69KNVA23rSeZHfMLULc3qybvgGGawkxmUnsqKNeUc");
+declare_id!("7gW3FxyrXEMwxh9Pm8fPLHNXfrLxvbzin5gLRMXQEh9k");
 
 // Instructions
 #[program]
@@ -28,6 +28,11 @@ pub mod counter {
     pub fn set_counter(ctx: Context<SetCounter>, count: u64) -> Result<()> {
         let counter = &mut ctx.accounts.counter;
         counter.count = count;
+        Ok(())
+    }
+
+    // close account counter (delete)
+    pub fn close_counter(ctx: Context<CloseCounter>) -> Result<()> {
         Ok(())
     }
 
@@ -61,6 +66,13 @@ pub struct IncrementCounter<'info> {
 #[derive(Accounts)]
 pub struct SetCounter<'info> {
     #[account(mut, has_one = authority)]
+    pub counter: Account<'info, Counter>,
+    pub authority: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct CloseCounter<'info> {
+    #[account(mut, has_one = authority, close = authority)]
     pub counter: Account<'info, Counter>,
     pub authority: Signer<'info>,
 }
