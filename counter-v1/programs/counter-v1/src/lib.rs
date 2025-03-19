@@ -16,6 +16,14 @@ pub mod counter {
 
         Ok(())
     }
+
+    // increment counter + 1
+    pub fn increment_counter(ctx: Context<IncrementCounter>) -> Result<()> {
+        let counter = &mut ctx.accounts.counter;
+        counter.count += 1;
+        Ok(())
+    }
+
 }
 
 const ANCHOR_DISCRIMINATOR: usize = 8;
@@ -32,6 +40,15 @@ pub struct InitializeCounter<'info> {
     pub signer: Signer<'info>,
     // system program
     pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct IncrementCounter<'info> {
+    //#[account(mut, seeds = [b"counter", signer.key().as_ref()], bump)]
+    #[account(mut, has_one = authority)]
+    pub counter: Account<'info, Counter>,
+    // signer
+    pub authority: Signer<'info>,
 }
 
 // Accounts
