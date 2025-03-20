@@ -39,6 +39,17 @@ pub struct InitializeUser<'info> {
     pub system_program: Program<'info, System>,
 }
 
+#[derive(Accounts)]
+pub struct InitializeTodo<'info> {
+    // signer
+
+    // todo
+
+    // user
+
+    // system_program
+}
+
 
 #[account]
 #[derive(InitSpace)]
