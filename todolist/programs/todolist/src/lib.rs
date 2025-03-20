@@ -17,7 +17,14 @@ pub struct InitializeUser<'info> {
     // signer => utilisateur qui signe la transaction
     #[account(mut)]
     pub signer: Signer<'info>,
-    // user => utilisateur à créé 
+    // user => utilisateur à créé
+    #[account(
+        init,
+        payer = signer,
+        space = 8 + User::INIT_SPACE,
+        seeds = [b"user", signer.key().as_ref()],
+        bump
+    )]
     
     // system_program => alloue l'espace pour l'account à créer
     pub system_program: Program<'info, System>,
@@ -30,7 +37,7 @@ pub struct User {
     user_pubkey: Pubkey,
     #[max_len(30)]
     nickname: String,
-    todo_count: number
+    todo_count: u32,
 }
 
 #[account]
@@ -42,7 +49,7 @@ pub struct Todo {
     description: String
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, InitSpace)]
 pub enum TodoStatus {
     Todo,
     Done
