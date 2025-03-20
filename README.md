@@ -40,6 +40,8 @@
 -> solana-test-validator
 -> anchor test
 -> anchor test --skip-local-validator --skip-deploy
+-> Passer la version de 4 à 3 dans Cargo.lock si erreur "lock file version 4 requires `-Znext-lockfile-bump`"
+-> cargo update -p bytemuck_derive@1.9.1 --precise 1.8.1 si erreur "failed to parse manifest at `/Users/odomart/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytemuck_derive-1.9.1/Cargo.toml`"
 ```
 
 ### Communauté
