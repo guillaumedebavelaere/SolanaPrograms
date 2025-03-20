@@ -19,6 +19,22 @@ pub mod todolist {
 
         Ok(())
     }
+
+    pub fn initialize_todo(ctx: Context<InitializeTodo>, todo_count_index: u32, description: String) -> Result<()> {
+        let user = &mut ctx.accounts.user;
+        let todo = &mut ctx.accounts.todo;
+
+        // verification que le todo_count_index est bien le user.todo_count
+        require_eq!(todo_count_index, user.todo_count + 1, TodoError::InvalidIndex);
+
+        todo.todo_id = todo_count_index;
+        todo.status = TodoStatus::Todo;
+        todo.description = description;
+
+        user.todo_count += 1;
+
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -92,4 +108,10 @@ pub enum TodoStatus {
     Todo,
     Done
     // In Progress
+}
+
+#[error_code]
+pub enum TodoError {
+    #[msg("Invalid index")]
+    InvalidIndex,
 }
