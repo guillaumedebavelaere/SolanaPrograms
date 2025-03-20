@@ -8,6 +8,11 @@ pub mod todolist {
 
     pub fn initialize_user(ctx: Context<InitializeUser>) -> Result<()> {
         // Initialiser les attributs de l'utilisateur
+
+        // user_pubkey la public key du signer
+        // todocount = 0
+        // nickname = paramètre passé
+
         Ok(())
     }
 }
@@ -25,7 +30,7 @@ pub struct InitializeUser<'info> {
         seeds = [b"user", signer.key().as_ref()],
         bump
     )]
-    
+    pub user: Account<'info, User>,
     // system_program => alloue l'espace pour l'account à créer
     pub system_program: Program<'info, System>,
 }
@@ -43,13 +48,13 @@ pub struct User {
 #[account]
 #[derive(InitSpace)]
 pub struct Todo {
-    todo_id: u32
-    status: TodoStatus
+    todo_id: u32,
+    status: TodoStatus,
     #[max_len(50)]
-    description: String
+    description: String,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, InitSpace)]
+#[derive(InitSpace, AnchorSerialize, AnchorDeserialize, Clone)]
 pub enum TodoStatus {
     Todo,
     Done
