@@ -6,8 +6,12 @@ declare_id!("6dHVUfZ2ppTbxsRsmoAwyD1wCz8tp9uKH9GCyjrFuSvU");
 pub mod todolist {
     use super::*;
 
-    pub fn initialize_user(ctx: Context<InitializeUser>) -> Result<()> {
+    pub fn initialize_user(ctx: Context<InitializeUser>, nickname: String) -> Result<()> {
         // Initialiser les attributs de l'utilisateur
+        let user = &mut ctx.accounts.user;
+        user.todo_count = 0;
+        user.user_pubkey = *ctx.accounts.signer.key; // &Pubkey => * => Pubkey
+        user.nickname = nickname;
 
         // user_pubkey la public key du signer
         // todocount = 0
