@@ -13,10 +13,14 @@ pub mod todolist {
 }
 
 #[derive(Accounts)]
-pub struct InitializeUser {
+pub struct InitializeUser<'info> {
     // signer => utilisateur qui signe la transaction
-    // system_program => alloue l'espace pour l'account à créer
+    #[account(mut)]
+    pub signer: Signer<'info>,
     // user => utilisateur à créé 
+    
+    // system_program => alloue l'espace pour l'account à créer
+    pub system_program: Program<'info, System>,
 }
 
 
