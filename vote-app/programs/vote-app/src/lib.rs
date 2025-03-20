@@ -64,7 +64,7 @@ mod hello_anchor {
             return Err("user choice index too big");
         }*/
         require!(
-            (proposal.choices.len() as u8) < user_choice,
+            (proposal.choices.len() as u8) >= user_choice,
             ProposalError::InvalidOption
         );
 
