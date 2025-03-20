@@ -83,7 +83,8 @@ pub struct CreateProposal<'info> {
     (4 + title.len()) + // title lenght
     (4 + description.len()) + // description length
     8 + // deadline u64
-    choices.iter().map(|choice| 4 + choice.len()).sum::<usize>())
+    4 + // vec length
+    choices.iter().map(|choice| 4 + choice.len() + 8).sum::<usize>()) // choice label size + count u64
     ]
     pub proposal: Account<'info, Proposal>,
     #[account(mut)]
