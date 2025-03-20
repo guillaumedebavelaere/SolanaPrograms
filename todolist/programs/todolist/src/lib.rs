@@ -40,14 +40,32 @@ pub struct InitializeUser<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(todo_count_index: u32)]
 pub struct InitializeTodo<'info> {
     // signer
+    #[account(mut)]
+    pub signer: Signer<'info>,
 
     // todo
+    #[account(
+        init,
+        payer = signer,
+        space = 8 + Todo::INIT_SPACE,
+        seeds = [b"todo", signer.key().as_ref(), &todo_count_index.to_le_bytes()],
+        bump
+    )]
+    pub todo: Account<'info, Todo>,
 
     // user
+    #[account(
+        mut,
+        seeds = [b"user", signer.key().as_ref()],
+        bump
+    )]
+    pub user: Account<'info, User>,
 
     // system_program
+    pub system_program: Program<'info, System>,
 }
 
 
