@@ -46,26 +46,30 @@ mod hello_anchor {
 
         // verification au niveau de la deadline
         require!(
-            Clock::get()?.unix_timestamp < proposal.deadline,
+            Clock::get()?.unix_timestamp < proposal.deadline as i64,
             ProposalError::DeadlinePassed
         );
 
         // init voter
         let voter = &mut ctx.accounts.voter;
         voter.proposal = proposal.key();
-        voter.user = ctx.account.signer.key();
+        voter.user = ctx.accounts.signer.key();
         voter.choice_option = user_choice;
 
         // verification choices length
-        if user_choice < 0 {
+        /*if user_choice < 0 {
             return Err("user choice index negative");
         }
-        if proposal.choices.len() < user_choice {
+        if (proposal.choices.len() as u8) < user_choice {
             return Err("user choice index too big");
-        }
+        }*/
+        require!(
+            (proposal.choices.len() as u8) < user_choice,
+            ProposalError::InvalidOption
+        );
 
         // +1
-        proposal.choices[user_choice as usize] += 1;
+        proposal.choices[user_choice as usize].count += 1;
 
         Ok(())
     }
@@ -118,7 +122,8 @@ pub struct Choice {
     count: u64,
 }
 
-#[derive(InitSpace, Clone)]
+#[account]
+#[derive(InitSpace)]
 pub struct Voter {
     proposal: Pubkey,
     user: Pubkey,
@@ -131,6 +136,8 @@ pub enum ProposalError {
     MaxLengthChoices,
     #[msg("You can't vote anymore, deadline passed")]
     DeadlinePassed,
+    #[msg("option index negative or too big")]
+    InvalidOption,
 }
 
 // frontend
