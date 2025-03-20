@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program::clock::Clock;
 
 // This is your program's public key and it will update
 // automatically when you build the project.
@@ -11,7 +12,7 @@ mod hello_anchor {
         ctx: Context<CreateProposal>,
         title: String,
         description: String,
-        choices: Vec<Choice>,
+        choices: Vec<String>,
         deadline: u64,
     ) -> Result<()> {
         // vérification que choices est un vec de max 5 élements
@@ -21,6 +22,50 @@ mod hello_anchor {
         );
 
         // init attributes from Proposal
+        let proposal = &mut ctx.accounts.proposal;
+        proposal.title = title;
+        proposal.description = description;
+        proposal.deadline = deadline;
+
+        let mut choices_vec = Vec::new();
+
+        for choice in choices {
+            let option = Choice {
+                label: choice,
+                count: 0,
+            };
+            choices_vec.push(option);
+        }
+
+        proposal.choices = choices_vec;
+        Ok(())
+    }
+
+    pub fn cast_vote(ctx: Context<CastVote>, user_choice: u8) -> Result<()> {
+        let proposal = &mut ctx.accounts.proposal;
+
+        // verification au niveau de la deadline
+        require!(
+            Clock::get()?.unix_timestamp < proposal.deadline,
+            ProposalError::DeadlinePassed
+        );
+
+        // init voter
+        let voter = &mut ctx.accounts.voter;
+        voter.proposal = proposal.key();
+        voter.user = ctx.account.signer.key();
+        voter.choice_option = user_choice;
+
+        // verification choices length
+        if user_choice < 0 {
+            return Err("user choice index negative");
+        }
+        if proposal.choices.len() < user_choice {
+            return Err("user choice index too big");
+        }
+
+        // +1
+        proposal.choices[user_choice as usize] += 1;
 
         Ok(())
     }
@@ -42,6 +87,21 @@ pub struct CreateProposal<'info> {
     pub system_program: Program<'info, System>,
 }
 
+#[derive(Accounts)]
+pub struct CastVote<'info> {
+    #[account(mut)]
+    pub proposal: Account<'info, Proposal>,
+    #[account(init, 
+    payer = signer, 
+    space = 8 + Voter::INIT_SPACE, 
+    seeds = [proposal.key().as_ref(), signer.key().as_ref()], 
+    bump)]
+    pub voter: Account<'info, Voter>,
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
 const MAX_CHOICES: u64 = 5;
 
 #[account]
@@ -58,6 +118,7 @@ pub struct Choice {
     count: u64,
 }
 
+#[derive(InitSpace, Clone)]
 pub struct Voter {
     proposal: Pubkey,
     user: Pubkey,
@@ -68,6 +129,8 @@ pub struct Voter {
 pub enum ProposalError {
     #[msg("Choices vec is max 5 elements")]
     MaxLengthChoices,
+    #[msg("You can't vote anymore, deadline passed")]
+    DeadlinePassed,
 }
 
 // frontend
