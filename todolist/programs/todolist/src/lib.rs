@@ -35,6 +35,20 @@ pub mod todolist {
 
         Ok(())
     }
+
+    pub fn update_todo(ctx: Context<UpdateTodo>, todo_id: u32) -> Result<()> {
+        let todo = &mut ctx.accounts.todo;
+        require_eq!(todo.todo_id, todo_id, TodoError::InvalidIndex);
+
+        todo.status = TodoStatus::Done;
+
+        Ok(())
+    }
+
+    pub fn close_todo(ctx: Context<CloseTodo>, todo_id: u32) -> Result<()> {
+        require_eq!(ctx.accounts.todo.todo_id, todo_id, TodoError::InvalidIndex);
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -84,6 +98,35 @@ pub struct InitializeTodo<'info> {
     pub system_program: Program<'info, System>,
 }
 
+#[derive(Accounts)]
+#[instruction(todo_id: u32)]
+pub struct UpdateTodo<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [b"todo", signer.key().as_ref(), &todo_id.to_le_bytes()],
+        bump
+    )]
+
+    pub todo: Account<'info, Todo>,
+}
+
+#[derive(Accounts)]
+#[instruction(todo_id: u32)]
+pub struct CloseTodo<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [b"todo", signer.key().as_ref(), &todo_id.to_le_bytes()],
+        bump,
+        close = signer
+    )]
+    pub todo: Account<'info, Todo>,
+}
 
 #[account]
 #[derive(InitSpace)]
