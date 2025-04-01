@@ -1,9 +1,12 @@
 use anchor_lang::prelude::*;
+use anchor_lang::system_program;
 
 declare_id!("7UcDy4kQetR3MVK5utV9kfW85WMvafxrPgYkQ469hQA1");
 
 #[program]
 pub mod vault {
+    use anchor_lang::system_program;
+
     use super::*;
 
     pub fn create_vault(ctx: Context<CreateVault>) -> Result<()> {
@@ -15,6 +18,24 @@ pub mod vault {
     }
 
     pub fn deposit(ctx: Context<DepositVault>, amount: u64) -> Result<()> {
+
+        // transfert par CPI
+        // création du context 
+        let cpi_context = CpiContext::new(
+            ctx.accounts.system_program.to_account_info(),
+            system_program::Transfer {
+                from: ctx.accounts.signer.to_account_info(),
+                to: ctx.accounts.vault.to_account_info()
+            }
+        );
+
+        // puis appel du programme SystemProgram transfert
+        system_program::transfer(cpi_context, amount)?;
+
+
+        // MAJ de l'attribut amount
+        ctx.accounts.vault.amount += amount;
+
         Ok(())
     }
 }
