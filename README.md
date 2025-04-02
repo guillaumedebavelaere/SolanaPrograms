@@ -27,6 +27,7 @@
 - [Explorer Solana](https://explorer.solana.com/)
 - [Faucet Devnet Solana](https://faucet.solana.com/)
 - [Solflare Wallet](https://solflare.com/) / [Phantom Wallet](https://phantom.app/)
+- [Container de développement Solana/Anchor via Docker](https://github.com/pylejeune/solana-rust-anchor)
 
 ### Commandes importantes
 
