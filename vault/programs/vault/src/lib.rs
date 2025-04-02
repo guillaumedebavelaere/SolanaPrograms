@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::system_program;
 
-declare_id!("7UcDy4kQetR3MVK5utV9kfW85WMvafxrPgYkQ469hQA1");
+declare_id!("23Sg67SaKs9EHmTcssQ13ira6JJ14NX23MyhZgSzrwCc");
 
 #[program]
 pub mod vault {
@@ -35,7 +35,35 @@ pub mod vault {
 
         // MAJ de l'attribut amount
         ctx.accounts.vault.amount += amount;
+        msg!("Deposit on vault");
 
+        Ok(())
+    }
+
+    pub fn withdraw(ctx: Context<WithdrawVault>, amount: u64) -> Result<()> {
+        let fee: u64 = 10000;
+        ctx.accounts.vault.amount -= amount;
+        
+        // Equilibre entre le + et -
+
+        **ctx.accounts
+            .vault
+            .to_account_info()
+            .try_borrow_mut_lamports()? -= amount;
+
+        **ctx
+            .accounts
+            .signer
+            .to_account_info()
+            .try_borrow_mut_lamports()? += amount - fee;
+
+        **ctx
+            .accounts
+            .admin
+            .to_account_info()
+            .try_borrow_mut_lamports()? += fee;
+        
+        msg!("Withdraw on vault");
         Ok(())
     }
 }
@@ -70,6 +98,25 @@ pub struct DepositVault<'info> {
         bump
     )]
     pub vault: Account<'info, Vault>,
+    // system_program => transfert
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct WithdrawVault<'info> {
+    // signer => utilisateur qui signe la transaction
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    // vault => vault à créé
+    #[account(
+        mut,
+        seeds = [b"vault"],
+        bump
+    )]
+    pub vault: Account<'info, Vault>,
+    /// CHECK: Admin
+    #[account(mut)]
+    pub admin: UncheckedAccount<'info>,
     // system_program => transfert
     pub system_program: Program<'info, System>,
 }
